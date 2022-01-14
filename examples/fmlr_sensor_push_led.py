@@ -102,7 +102,7 @@ class Modem2Mqtt():
     logging.info("over {}".format("dormant session" if msg.payload[0] == "D" else "low power listening"))
     cmd = Command.create_with_write_file_action(
       file_id=0x42,
-      offset=2,
+      offset=4,
       data=data,
       interface_type=InterfaceType.D7ASP,
       interface_configuration=Configuration(
@@ -134,15 +134,16 @@ class Modem2Mqtt():
       data = cmd.actions[0].operation.operand.data
       logging.info("Command received: binary ALP (size {})".format(len(data)))
 
-      temperature = (data[0] * 0x100 + data[1]) / 10.0
-      result_temperature = {'active': 'ON', 'Temperature': temperature}
+      temperature = (data[0] * 0x100 + data[1]) / 100.0
+      humidity = (data[2] * 0x100 + data[3]) / 2.0
+      result_temperature = {'active': 'ON', 'Temperature': temperature, 'Humidity': humidity }
       result_json_temperature = json.dumps(result_temperature)
 
-      led_status = data[2] != 0
+      led_status = data[4] != 0
       result_led_status = {'state': 'ON' if led_status else 'OFF'}
       result_json_led_status = json.dumps(result_led_status)
 
-      logging.info("Gotten temperature {} and led is {}".format(temperature, "on" if led_status else "off"))
+      logging.info("Temperature: {}, Humidity: {}. Led is {}".format(temperature, humidity, "on" if led_status else "off"))
 
       #pass temperature and led status to seperate topics. This can also be done to the same topic
       self.mq.publish(self.mqtt_topic_temperature, result_json_temperature)

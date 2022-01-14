@@ -58,7 +58,7 @@ logging.info("Executing query...")
 modem.execute_command_async(
   alp_command=Command.create_with_read_file_action(
     file_id=0x42,
-    length=2,
+    length=4,
     interface_type=InterfaceType.D7ASP,
     interface_configuration=Configuration(
       qos=QoS(resp_mod=ResponseMode.RESP_MODE_ALL),
